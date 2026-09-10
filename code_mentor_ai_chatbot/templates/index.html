@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Mentor AI</title>
+
+    <style>
+        :root {
+            --bg: #080b10;
+            --panel: rgba(14, 19, 27, 0.88);
+            --panel-soft: rgba(255, 255, 255, 0.045);
+            --border: rgba(255, 255, 255, 0.09);
+            --text: #f2f5f9;
+            --muted: #8994a5;
+            --green: #55e6a5;
+            --cyan: #47c8ff;
+            --user: #235f53;
+            --bot: #151d27;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 24px;
+            display: grid;
+            place-items: center;
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                         BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(85, 230, 165, .13), transparent 28%),
+                radial-gradient(circle at 100% 100%, rgba(71, 200, 255, .12), transparent 30%),
+                var(--bg);
+        }
+
+        .app {
+            width: min(1100px, 100%);
+            height: min(820px, calc(100vh - 48px));
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            background: var(--panel);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, .48);
+        }
+
+        header {
+            min-height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 23px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(85, 230, 165, .35);
+            border-radius: 15px;
+            color: var(--green);
+            font-size: 20px;
+            font-weight: 900;
+            background: #0d1718;
+            box-shadow: inset 0 0 25px rgba(85, 230, 165, .06);
+        }
+
+        .brand h1 {
+            font-size: 18px;
+            letter-spacing: -.4px;
+        }
+
+        .brand p {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 13px var(--green);
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 8%;
+            scroll-behavior: smooth;
+        }
+
+        .welcome {
+            max-width: 760px;
+            margin: 7vh auto 0;
+            text-align: center;
+        }
+
+        .terminal {
+            width: 88px;
+            height: 66px;
+            margin: 0 auto 22px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #0b1017;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, .25);
+        }
+
+        .terminal-bar {
+            height: 17px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-left: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-bar i {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #536070;
+        }
+
+        .terminal-code {
+            padding: 11px 12px;
+            color: var(--green);
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .welcome h2 {
+            font-size: clamp(29px, 5vw, 47px);
+            line-height: 1.05;
+            letter-spacing: -1.8px;
+        }
+
+        .welcome h2 span {
+            color: var(--green);
+        }
+
+        .welcome p {
+            max-width: 610px;
+            margin: 15px auto 28px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .topics {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 9px;
+        }
+
+        .topic {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: #b5bfcd;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+            background: var(--panel-soft);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 19px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: min(78%, 730px);
+            padding: 13px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.58;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .user .bubble {
+            border-bottom-right-radius: 5px;
+            background: linear-gradient(135deg, #1d6758, #287c68);
+        }
+
+        .bot .bubble {
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 5px;
+            background: var(--bot);
+        }
+
+        .composer {
+            padding: 15px 22px 19px;
+            border-top: 1px solid var(--border);
+            background: rgba(5, 8, 12, .52);
+        }
+
+        .input-box {
+            max-width: 920px;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            padding: 9px 9px 9px 17px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 19px;
+            background: rgba(255, 255, 255, .045);
+            transition: .2s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: rgba(85, 230, 165, .55);
+            box-shadow: 0 0 0 4px rgba(85, 230, 165, .06);
+        }
+
+        textarea {
+            width: 100%;
+            max-height: 130px;
+            padding: 7px 0;
+            resize: none;
+            outline: none;
+            border: 0;
+            color: var(--text);
+            background: transparent;
+            font: inherit;
+            line-height: 1.5;
+        }
+
+        textarea::placeholder {
+            color: #657080;
+        }
+
+        #sendBtn {
+            width: 43px;
+            height: 43px;
+            flex: 0 0 43px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: 13px;
+            color: #07110d;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--green), #8af2c4);
+            transition: transform .15s, opacity .15s;
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-1px);
+        }
+
+        #sendBtn:disabled {
+            cursor: not-allowed;
+            opacity: .45;
+            transform: none;
+        }
+
+        .hint {
+            margin-top: 8px;
+            color: #596574;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .typing {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing i {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #9aa6b5;
+            animation: pulse 1s infinite ease-in-out;
+        }
+
+        .typing i:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .typing i:nth-child(3) {
+            animation-delay: .3s;
+        }
+
+        @keyframes pulse {
+            0%, 80%, 100% {
+                opacity: .25;
+                transform: translateY(0);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-3px);
+            }
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 0;
+            }
+
+            .app {
+                width: 100%;
+                height: 100vh;
+                min-height: 100vh;
+                border: 0;
+                border-radius: 0;
+            }
+
+            header {
+                padding: 14px;
+            }
+
+            .status {
+                display: none;
+            }
+
+            .messages {
+                padding: 24px 14px;
+            }
+
+            .bubble {
+                max-width: 89%;
+            }
+
+            .topics {
+                padding: 0 8px;
+            }
+
+            .composer {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app">
+        <header>
+            <div class="brand">
+                <div class="logo">&lt;/&gt;</div>
+                <div>
+                    <h1>Code Mentor AI</h1>
+                    <p>Your programming study mentor</p>
+                </div>
+            </div>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                Mentor mode
+            </div>
+        </header>
+
+        <section class="messages" id="messages">
+            <div class="welcome" id="welcome">
+                <div class="terminal">
+                    <div class="terminal-bar">
+                        <i></i><i></i><i></i>
+                    </div>
+                    <div class="terminal-code">_learn()</div>
+                </div>
+
+                <h2>Build skills. <span>Write better code.</span></h2>
+
+                <p>
+                    Learn programming concepts, debug code, practice algorithms,
+                    understand computer science, and prepare for technical study.
+                </p>
+
+                <div class="topics">
+                    <span class="topic">Python</span>
+                    <span class="topic">Java</span>
+                    <span class="topic">Algorithms</span>
+                    <span class="topic">Web Development</span>
+                    <span class="topic">Debugging</span>
+                </div>
+            </div>
+        </section>
+
+        <form class="composer" id="chatForm">
+            <div class="input-box">
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    placeholder="Ask a coding or computer science question..."
+                    autocomplete="off"
+                ></textarea>
+
+                <button id="sendBtn" type="submit" aria-label="Send">
+                    ↑
+                </button>
+            </div>
+
+            <div class="hint">
+                Code Mentor AI only answers programming and technical study questions.
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+        const messages = document.getElementById("messages");
+        const welcome = document.getElementById("welcome");
+
+        function addMessage(text, role) {
+            const wrapper = document.createElement("div");
+            wrapper.className = `message ${role}`;
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.textContent = text;
+
+            wrapper.appendChild(bubble);
+            messages.appendChild(wrapper);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTyping() {
+            const wrapper = document.createElement("div");
+            wrapper.className = "message bot";
+            wrapper.id = "typing";
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.innerHTML = `
+                <span class="typing">
+                    <i></i><i></i><i></i>
+                </span>
+            `;
+
+            wrapper.appendChild(bubble);
+            messages.appendChild(wrapper);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTyping() {
+            document.getElementById("typing")?.remove();
+        }
+
+        input.addEventListener("input", () => {
+            input.style.height = "auto";
+            input.style.height = `${Math.min(input.scrollHeight, 130)}px`;
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = input.value.trim();
+
+            if (!message || sendBtn.disabled) {
+                return;
+            }
+
+            welcome.style.display = "none";
+            addMessage(message, "user");
+
+            input.value = "";
+            input.style.height = "auto";
+            sendBtn.disabled = true;
+            showTyping();
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                removeTyping();
+
+                addMessage(
+                    data.reply || "Sorry, I could not generate a response.",
+                    "bot"
+                );
+            } catch (error) {
+                removeTyping();
+
+                addMessage(
+                    "Unable to connect to Code Mentor AI right now. Please try again.",
+                    "bot"
+                );
+            } finally {
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        });
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                form.requestSubmit();
+            }
+        });
+    </script>
+</body>
+</html>
